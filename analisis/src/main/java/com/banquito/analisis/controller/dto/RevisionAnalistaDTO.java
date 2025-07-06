@@ -1,6 +1,6 @@
-package com.espe.analisis.crediticio.controller.dto;
+package com.banquito.analisis.controller.dto;
 
-import com.espe.analisis.crediticio.model.DecisionFinalAnalista;
+import com.banquito.analisis.model.Enums.DecisionFinalAnalista;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

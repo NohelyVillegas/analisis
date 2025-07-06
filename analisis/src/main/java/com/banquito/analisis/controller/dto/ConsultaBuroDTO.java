@@ -1,6 +1,6 @@
-package com.espe.analisis.crediticio.controller.dto;
+package com.banquito.analisis.controller.dto;
 
-import com.espe.analisis.crediticio.model.EstadoConsulta;
+import com.banquito.analisis.model.Enums;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +22,7 @@ public class ConsultaBuroDTO {
     private Long idSolicitud;
     
     @Schema(description = "Estado de la consulta")
-    private EstadoConsulta estadoConsulta;
+    private Enums.EstadoConsulta estadoConsulta;
     
     @Schema(description = "Score externo del buró", example = "720")
     private BigDecimal scoreExterno;

@@ -1,4 +1,4 @@
-package com.espe.analisis.crediticio.model;
+package com.banquito.analisis.model;
 
 import jakarta.persistence.*;
 import lombok.*;

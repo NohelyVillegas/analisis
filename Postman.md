@@ -8,7 +8,7 @@
 
 ### 1. **Evaluación Automática de Crédito**
 
-**Endpoint**: `POST /v1/risk/auto-evaluation`
+**Endpoint**: `POST /v1/riesgo/auto-evaluacion`
 
 **Headers**:
 ```
@@ -64,7 +64,7 @@ Content-Type: application/json
 
 ### 2. **Revisión del Analista**
 
-**Endpoint**: `POST /v1/risk/analyst-review`
+**Endpoint**: `POST /v1/riesgo/revision-analista`
 
 **Headers**:
 ```
@@ -107,12 +107,12 @@ Content-Type: application/json
 
 ### 3. **Consultar Evaluación por Solicitud**
 
-**Endpoint**: `GET /v1/risk/evaluations/{idSolicitud}`
+**Endpoint**: `GET /v1/riesgo/evaluaciones/{idSolicitud}`
 
 **Ejemplos**:
-- `GET /v1/risk/evaluations/1001`
-- `GET /v1/risk/evaluations/1002`
-- `GET /v1/risk/evaluations/1003`
+- `GET /v1/riesgo/evaluaciones/1001`
+- `GET /v1/riesgo/evaluaciones/1002`
+- `GET /v1/riesgo/evaluaciones/1003`
 
 ---
 
@@ -187,10 +187,10 @@ capacidadPago = (ingresos - egresos) * 0.30
 
 ## 🔄 Flujo de Pruebas Completo
 
-1. **Ejecutar Evaluación Automática** (`POST /v1/risk/auto-evaluation`)
+1. **Ejecutar Evaluación Automática** (`POST /v1/riesgo/auto-evaluacion`)
 2. **Obtener ID de Evaluación** de la respuesta
-3. **Si resultado es REVISION_MANUAL**, ejecutar **Revisión del Analista** (`POST /v1/risk/analyst-review`)
-4. **Consultar estado final** (`GET /v1/risk/evaluations/{idSolicitud}`)
+3. **Si resultado es REVISION_MANUAL**, ejecutar **Revisión del Analista** (`POST /v1/riesgo/revision-analista`)
+4. **Consultar estado final** (`GET /v1/riesgo/evaluaciones/{idSolicitud}`)
 
 ---
 

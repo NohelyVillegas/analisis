@@ -1,20 +1,25 @@
-package com.espe.analisis.crediticio.service;
+package com.banquito.analisis.service;
 
-import com.espe.analisis.crediticio.client.BureauCreditClient;
-import com.espe.analisis.crediticio.client.dto.BureauConsultaRequest;
-import com.espe.analisis.crediticio.client.dto.BureauConsultaResponse;
-import com.espe.analisis.crediticio.controller.dto.EvaluacionCrediticiaDTO;
-import com.espe.analisis.crediticio.controller.dto.RevisionAnalistaDTO;
-import com.espe.analisis.crediticio.controller.dto.SolicitudAnalisisDTO;
-import com.espe.analisis.crediticio.controller.mapper.EvaluacionCrediticiaMapper;
-import com.espe.analisis.crediticio.model.*;
-import com.espe.analisis.crediticio.exception.BureauServiceException;
-import com.espe.analisis.crediticio.exception.CreditEvaluationException;
-import com.espe.analisis.crediticio.exception.NotFoundException;
-import com.espe.analisis.crediticio.repository.*;
+import com.banquito.analisis.client.ClienteBuroCrediticio;
+import com.banquito.analisis.client.dto.ConsultasBuroRequest;
+import com.banquito.analisis.client.dto.ConsultasBuroResponse;
+import com.banquito.analisis.controller.dto.EvaluacionCrediticiaDTO;
+import com.banquito.analisis.controller.dto.RevisionAnalistaDTO;
+import com.banquito.analisis.controller.dto.SolicitudAnalisisDTO;
+import com.banquito.analisis.controller.mapper.EvaluacionCrediticiaMapper;
+import com.banquito.analisis.model.*;
+import com.banquito.analisis.model.Enums.EstadoConsulta;
+import com.banquito.analisis.model.Enums.DecisionManual;
+import com.banquito.analisis.model.Enums.ResultadoAutomatico;
+import com.banquito.analisis.exception.ServicioBuroException;
+import com.banquito.analisis.exception.EvaluacionCrediticiaExcepcion;
+import com.banquito.analisis.exception.NotFoundException;
+import com.banquito.analisis.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.annotation.Backoff;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,34 +27,34 @@ import java.time.LocalDateTime;
 @Service
 @Slf4j
 @Transactional
-public class CreditRiskAnalysisService {
+public class AnalisisRiesgoService {
     
     private final ConsultasBuroRepository consultasBuroRepository;
     private final InformesBuroRepository informesBuroRepository;
     private final EvaluacionCrediticiaRepository evaluacionCrediticiaRepository;
     private final ObservacionAnalistaRepository observacionAnalistaRepository;
-    private final BureauCreditClient bureauCreditClient;
+    private final ClienteBuroCrediticio clienteBuroCrediticio;
     private final EvaluacionCrediticiaMapper evaluacionMapper;
     
     private static final BigDecimal FACTOR_CAPACIDAD_PAGO = new BigDecimal("0.30");
     private static final BigDecimal SCORE_APROBACION_AUTOMATICA = new BigDecimal("750");
     private static final BigDecimal SCORE_REVISION_MANUAL = new BigDecimal("600");
     
-    public CreditRiskAnalysisService(ConsultasBuroRepository consultasBuroRepository,
+    public AnalisisRiesgoService(ConsultasBuroRepository consultasBuroRepository,
                                    InformesBuroRepository informesBuroRepository,
                                    EvaluacionCrediticiaRepository evaluacionCrediticiaRepository,
                                    ObservacionAnalistaRepository observacionAnalistaRepository,
-                                   BureauCreditClient bureauCreditClient,
+                                   ClienteBuroCrediticio clienteBuroCrediticio,
                                    EvaluacionCrediticiaMapper evaluacionMapper) {
         this.consultasBuroRepository = consultasBuroRepository;
         this.informesBuroRepository = informesBuroRepository;
         this.evaluacionCrediticiaRepository = evaluacionCrediticiaRepository;
         this.observacionAnalistaRepository = observacionAnalistaRepository;
-        this.bureauCreditClient = bureauCreditClient;
+        this.clienteBuroCrediticio = clienteBuroCrediticio;
         this.evaluacionMapper = evaluacionMapper;
     }
     
-    @Retryable(value = {BureauServiceException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+    @Retryable(value = {ServicioBuroException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public ConsultasBuro consultarBuro(Long idSolicitud) {
         log.info("Iniciando consulta al buró para solicitud: {}", idSolicitud);
         
@@ -67,10 +72,10 @@ public class CreditRiskAnalysisService {
         consulta.setFechaConsulta(LocalDateTime.now());
         
         try {
-            BureauConsultaRequest request = new BureauConsultaRequest();
+            ConsultasBuroRequest request = new ConsultasBuroRequest();
             request.setIdSolicitud(idSolicitud);
             
-            BureauConsultaResponse response = bureauCreditClient.consultarBuro(request);
+            ConsultasBuroResponse response = clienteBuroCrediticio.consultarBuro(request);
             
             if (response.isExitoso()) {
                 consulta.setScoreExterno(response.getScoreExterno());
@@ -84,13 +89,13 @@ public class CreditRiskAnalysisService {
                 log.info("Consulta al buró exitosa para solicitud: {}", idSolicitud);
             } else {
                 consulta.setEstadoConsulta(EstadoConsulta.FALLIDA);
-                throw new BureauServiceException("Consulta Buró", response.getMensaje());
+                throw new ServicioBuroException("Consulta Buró", response.getMensaje());
             }
             
         } catch (Exception e) {
             log.error("Error al consultar el buró para solicitud: {}", idSolicitud, e);
             consulta.setEstadoConsulta(EstadoConsulta.FALLIDA);
-            throw new BureauServiceException("Consulta Buró", e.getMessage());
+            throw new ServicioBuroException("Consulta Buró", e.getMessage());
         }
         
         return consultasBuroRepository.save(consulta);
@@ -103,7 +108,7 @@ public class CreditRiskAnalysisService {
             .orElseThrow(() -> new NotFoundException(idConsultaBuro.toString(), "ConsultasBuro"));
         
         if (consulta.getEstadoConsulta() != EstadoConsulta.COMPLETADA) {
-            throw new CreditEvaluationException("Informe Buró", "La consulta no está completada");
+            throw new EvaluacionCrediticiaExcepcion("Informe Buró", "La consulta no está completada");
         }
         
         var informeExistente = informesBuroRepository.findByIdConsultaBuro(idConsultaBuro);
@@ -225,4 +230,4 @@ public class CreditRiskAnalysisService {
         
         return evaluacionMapper.toDTO(evaluacion);
     }
-}
+} 

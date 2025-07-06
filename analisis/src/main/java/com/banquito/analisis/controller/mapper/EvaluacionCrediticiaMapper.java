@@ -1,7 +1,7 @@
-package com.espe.analisis.crediticio.controller.mapper;
+package com.banquito.analisis.controller.mapper;
 
-import com.espe.analisis.crediticio.controller.dto.EvaluacionCrediticiaDTO;
-import com.espe.analisis.crediticio.model.EvaluacionCrediticia;
+import com.banquito.analisis.controller.dto.EvaluacionCrediticiaDTO;
+import com.banquito.analisis.model.EvaluacionCrediticia;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;

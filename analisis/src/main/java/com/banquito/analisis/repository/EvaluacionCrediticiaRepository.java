@@ -1,7 +1,7 @@
-package com.espe.analisis.crediticio.repository;
+package com.banquito.analisis.repository;
 
-import com.espe.analisis.crediticio.model.EvaluacionCrediticia;
-import com.espe.analisis.crediticio.model.ResultadoAutomatico;
+import com.banquito.analisis.model.EvaluacionCrediticia;
+import com.banquito.analisis.model.Enums.ResultadoAutomatico;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

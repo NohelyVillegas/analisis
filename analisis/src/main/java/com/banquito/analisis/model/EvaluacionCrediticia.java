@@ -1,7 +1,7 @@
-package com.espe.analisis.crediticio.model;
+package com.banquito.analisis.model;
 
-import com.espe.analisis.crediticio.model.DecisionFinalAnalista;
-import com.espe.analisis.crediticio.model.ResultadoAutomatico;
+import com.banquito.analisis.model.Enums.DecisionFinalAnalista;
+import com.banquito.analisis.model.Enums.ResultadoAutomatico;
 import jakarta.persistence.*;
 import lombok.*;
 

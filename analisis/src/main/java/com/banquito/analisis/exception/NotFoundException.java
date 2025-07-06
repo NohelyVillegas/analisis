@@ -1,4 +1,4 @@
-package com.espe.analisis.crediticio.exception;
+package com.banquito.analisis.exception;
 
 public class NotFoundException extends RuntimeException {
     

@@ -1,14 +1,14 @@
-package com.espe.analisis.crediticio.client;
+package com.banquito.analisis.client;
 
-import com.espe.analisis.crediticio.client.dto.BureauConsultaRequest;
-import com.espe.analisis.crediticio.client.dto.BureauConsultaResponse;
+import com.banquito.analisis.client.dto.ConsultasBuroRequest;
+import com.banquito.analisis.client.dto.ConsultasBuroResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(name = "bureau-credit-client", url = "${bureau.credit.url:http://localhost:8081}")
-public interface BureauCreditClient {
+public interface ClienteBuroCrediticio {
     
     @PostMapping("/api/v1/bureau/consulta")
-    BureauConsultaResponse consultarBuro(@RequestBody BureauConsultaRequest request);
-}
+    ConsultasBuroResponse consultarBuro(@RequestBody ConsultasBuroRequest request);
+} 

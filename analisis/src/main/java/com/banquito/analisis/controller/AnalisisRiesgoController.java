@@ -1,12 +1,12 @@
-package com.espe.analisis.crediticio.controller;
+package com.banquito.analisis.controller;
 
-import com.espe.analisis.crediticio.controller.dto.EvaluacionCrediticiaDTO;
-import com.espe.analisis.crediticio.controller.dto.RevisionAnalistaDTO;
-import com.espe.analisis.crediticio.controller.dto.SolicitudAnalisisDTO;
-import com.espe.analisis.crediticio.exception.BureauServiceException;
-import com.espe.analisis.crediticio.exception.CreditEvaluationException;
-import com.espe.analisis.crediticio.exception.NotFoundException;
-import com.espe.analisis.crediticio.service.CreditRiskAnalysisService;
+import com.banquito.analisis.controller.dto.EvaluacionCrediticiaDTO;
+import com.banquito.analisis.controller.dto.RevisionAnalistaDTO;
+import com.banquito.analisis.controller.dto.SolicitudAnalisisDTO;
+import com.banquito.analisis.exception.ServicioBuroException;
+import com.banquito.analisis.exception.EvaluacionCrediticiaExcepcion;
+import com.banquito.analisis.exception.NotFoundException;
+import com.banquito.analisis.service.AnalisisRiesgoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,18 +18,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/v1/risk")
+@RequestMapping("/v1/riesgo")
 @Tag(name = "Análisis Crediticio", description = "APIs para el análisis de riesgo crediticio")
 @Slf4j
-public class CreditRiskAnalysisController {
+public class AnalisisRiesgoController {
     
-    private final CreditRiskAnalysisService creditRiskAnalysisService;
+    private final AnalisisRiesgoService analisisRiesgoService;
     
-    public CreditRiskAnalysisController(CreditRiskAnalysisService creditRiskAnalysisService) {
-        this.creditRiskAnalysisService = creditRiskAnalysisService;
+    public AnalisisRiesgoController(AnalisisRiesgoService analisisRiesgoService) {
+        this.analisisRiesgoService = analisisRiesgoService;
     }
     
-    @PostMapping("/auto-evaluation")
+    @PostMapping("/auto-evaluacion")
     @Operation(summary = "Realizar evaluación automática de crédito", 
                description = "Ejecuta el proceso completo de evaluación crediticia incluyendo consulta al buró e informe")
     @ApiResponses(value = {
@@ -43,17 +43,17 @@ public class CreditRiskAnalysisController {
         log.info("Recibida solicitud de evaluación automática para: {}", solicitud.getIdSolicitud());
         
         try {
-            EvaluacionCrediticiaDTO evaluacion = creditRiskAnalysisService.evaluarAutomaticamente(solicitud);
+            EvaluacionCrediticiaDTO evaluacion = analisisRiesgoService.evaluarAutomaticamente(solicitud);
             log.info("Evaluación automática completada para solicitud: {}", solicitud.getIdSolicitud());
             return ResponseEntity.ok(evaluacion);
             
-        } catch (BureauServiceException | CreditEvaluationException e) {
+        } catch (ServicioBuroException | EvaluacionCrediticiaExcepcion e) {
             log.error("Error en evaluación automática para solicitud: {}", solicitud.getIdSolicitud(), e);
             return ResponseEntity.internalServerError().build();
         }
     }
     
-    @PostMapping("/analyst-review")
+    @PostMapping("/revision-analista")
     @Operation(summary = "Procesar revisión del analista", 
                description = "Permite al analista revisar y cambiar la decisión automática")
     @ApiResponses(value = {
@@ -68,7 +68,7 @@ public class CreditRiskAnalysisController {
         log.info("Recibida revisión del analista para evaluación: {}", revision.getIdEvaluacion());
         
         try {
-            EvaluacionCrediticiaDTO evaluacion = creditRiskAnalysisService.procesarRevisionAnalista(revision);
+            EvaluacionCrediticiaDTO evaluacion = analisisRiesgoService.procesarRevisionAnalista(revision);
             log.info("Revisión del analista procesada para evaluación: {}", revision.getIdEvaluacion());
             return ResponseEntity.ok(evaluacion);
             
@@ -78,7 +78,7 @@ public class CreditRiskAnalysisController {
         }
     }
     
-    @GetMapping("/evaluations/{idSolicitud}")
+    @GetMapping("/evaluaciones/{idSolicitud}")
     @Operation(summary = "Obtener evaluación por solicitud", 
                description = "Recupera la evaluación crediticia de una solicitud específica")
     @ApiResponses(value = {
@@ -92,7 +92,7 @@ public class CreditRiskAnalysisController {
         log.info("Consultando evaluación para solicitud: {}", idSolicitud);
         
         try {
-            EvaluacionCrediticiaDTO evaluacion = creditRiskAnalysisService.obtenerEvaluacionPorSolicitud(idSolicitud);
+            EvaluacionCrediticiaDTO evaluacion = analisisRiesgoService.obtenerEvaluacionPorSolicitud(idSolicitud);
             return ResponseEntity.ok(evaluacion);
             
         } catch (NotFoundException e) {
@@ -107,9 +107,9 @@ public class CreditRiskAnalysisController {
         return ResponseEntity.notFound().build();
     }
     
-    @ExceptionHandler({BureauServiceException.class, CreditEvaluationException.class})
+    @ExceptionHandler({ServicioBuroException.class, EvaluacionCrediticiaExcepcion.class})
     public ResponseEntity<Void> handleServiceException(RuntimeException e) {
         log.error("Error en servicio: {}", e.getMessage());
         return ResponseEntity.internalServerError().build();
     }
-}
+} 

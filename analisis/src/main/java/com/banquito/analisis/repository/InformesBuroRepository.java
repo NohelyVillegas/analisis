@@ -1,6 +1,6 @@
-package com.espe.analisis.crediticio.repository;
+package com.banquito.analisis.repository;
 
-import com.espe.analisis.crediticio.model.InformesBuro;
+import com.banquito.analisis.model.InformesBuro;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

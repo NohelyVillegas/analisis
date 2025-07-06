@@ -1,7 +1,7 @@
-package com.espe.analisis.crediticio.controller.dto;
+package com.banquito.analisis.controller.dto;
 
-import com.espe.analisis.crediticio.model.DecisionFinalAnalista;
-import com.espe.analisis.crediticio.model.ResultadoAutomatico;
+import com.banquito.analisis.model.Enums.DecisionFinalAnalista;
+import com.banquito.analisis.model.Enums.ResultadoAutomatico;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

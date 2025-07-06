@@ -1,4 +1,4 @@
-package com.espe.analisis.crediticio.config;
+package com.banquito.analisis.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

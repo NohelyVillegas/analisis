@@ -1,4 +1,4 @@
-package com.espe.analisis.crediticio.client.dto;
+package com.banquito.analisis.client.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BureauConsultaResponse {
+public class ConsultasBuroResponse {
     
     private boolean exitoso;
     private String mensaje;
@@ -22,4 +22,4 @@ public class BureauConsultaResponse {
     private BigDecimal diasMoraPromedio;
     private LocalDate fechaPrimeraMora;
     private String jsonCompleto;
-}
+} 

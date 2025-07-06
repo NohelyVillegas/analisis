@@ -1,4 +1,4 @@
-package com.espe.analisis.crediticio.model;
+package com.banquito.analisis.model;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
+
+import com.banquito.analisis.model.Enums;
 
 @Entity
 @Table(name = "consultas_buro", schema = "analisis_crediticio")
@@ -34,7 +36,7 @@ public class ConsultasBuro {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_consulta")
-    private EstadoConsulta estadoConsulta;
+    private Enums.EstadoConsulta estadoConsulta;
     
     @Column(name = "fecha_consulta")
     private LocalDateTime fechaConsulta;

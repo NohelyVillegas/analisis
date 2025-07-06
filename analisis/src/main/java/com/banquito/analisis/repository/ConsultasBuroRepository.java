@@ -1,7 +1,7 @@
-package com.espe.analisis.crediticio.repository;
+package com.banquito.analisis.repository;
 
-import com.espe.analisis.crediticio.model.ConsultasBuro;
-import com.espe.analisis.crediticio.model.EstadoConsulta;
+import com.banquito.analisis.model.ConsultasBuro;
+import com.banquito.analisis.model.Enums;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +13,7 @@ public interface ConsultasBuroRepository extends JpaRepository<ConsultasBuro, Lo
     
     Optional<ConsultasBuro> findByIdSolicitud(Long idSolicitud);
     
-    List<ConsultasBuro> findByEstadoConsulta(EstadoConsulta estadoConsulta);
+    List<ConsultasBuro> findByEstadoConsulta(Enums.EstadoConsulta estadoConsulta);
     
-    List<ConsultasBuro> findByIdSolicitudAndEstadoConsulta(Long idSolicitud, EstadoConsulta estadoConsulta);
+    List<ConsultasBuro> findByIdSolicitudAndEstadoConsulta(Long idSolicitud, Enums.EstadoConsulta estadoConsulta);
 }

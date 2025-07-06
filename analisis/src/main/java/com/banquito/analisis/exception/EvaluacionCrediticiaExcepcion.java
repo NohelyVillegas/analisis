@@ -1,11 +1,11 @@
-package com.espe.analisis.crediticio.exception;
+package com.banquito.analisis.exception;
 
-public class CreditEvaluationException extends RuntimeException {
+public class EvaluacionCrediticiaExcepcion extends RuntimeException {
     
     private final String evaluationStep;
     private final String reason;
     
-    public CreditEvaluationException(String evaluationStep, String reason) {
+    public EvaluacionCrediticiaExcepcion(String evaluationStep, String reason) {
         super();
         this.evaluationStep = evaluationStep;
         this.reason = reason;
@@ -15,4 +15,4 @@ public class CreditEvaluationException extends RuntimeException {
     public String getMessage() {
         return "Error en la evaluación crediticia en el paso: " + this.evaluationStep + ". Razón: " + reason;
     }
-}
+} 
