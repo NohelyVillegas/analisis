@@ -6,9 +6,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "bureau-credit-client", url = "${bureau.credit.url:http://localhost:8081}")
+@FeignClient(name = "buro-credit-client", url = "${buro.credit.url:http://localhost:8081}")
 public interface ClienteBuroCrediticio {
     
-    @PostMapping("/api/v1/bureau/consulta")
+    @PostMapping("/api/v1/buro/consulta")
     ConsultasBuroResponse consultarBuro(@RequestBody ConsultasBuroRequest request);
 } 
