@@ -28,9 +28,6 @@ public class EvaluacionCrediticiaDTO {
     @Schema(description = "Decisión final del analista")
     private DecisionFinalAnalista decisionFinalAnalista;
     
-    @Schema(description = "Score interno calculado", example = "750")
-    private BigDecimal scoreInternoCalculado;
-    
     @Schema(description = "Observaciones del motor de reglas")
     private String observacionesMotorReglas;
     

@@ -45,8 +45,11 @@ public class EvaluacionCrediticia {
     @Column(name = "resultado_automatico")
     private ResultadoAutomatico resultadoAutomatico;
     
-    @Column(name = "score_interno_calculado", precision = 4, scale = 0)
-    private BigDecimal scoreInternoCalculado;
+    @Column(name = "score_interno", precision = 4, scale = 0)
+    private BigDecimal scoreInterno;
+    
+    @Column(name = "calificacion_cliente", length = 10)
+    private String calificacionCliente;
     
     @Version
     private Integer version;

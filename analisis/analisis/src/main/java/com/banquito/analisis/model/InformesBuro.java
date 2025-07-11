@@ -25,9 +25,6 @@ public class InformesBuro {
     @Column(name = "id_consulta_buro")
     private Long idConsultaBuro;
     
-    @Column(name = "json_respuesta_completa", columnDefinition = "jsonb")
-    private String jsonRespuestaCompleta;
-    
     @Column(name = "monto_total_adeudado", precision = 12, scale = 2)
     private BigDecimal montoTotalAdeudado;
     

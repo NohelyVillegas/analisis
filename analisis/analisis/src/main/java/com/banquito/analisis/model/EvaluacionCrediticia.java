@@ -45,9 +45,6 @@ public class EvaluacionCrediticia {
     @Column(name = "resultado_automatico")
     private ResultadoAutomatico resultadoAutomatico;
     
-    @Column(name = "score_interno_calculado", precision = 4, scale = 0)
-    private BigDecimal scoreInternoCalculado;
-    
     @Version
     private Integer version;
     

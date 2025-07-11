@@ -28,8 +28,8 @@ public class EvaluacionCrediticiaDTO {
     @Schema(description = "Decisión final del analista")
     private DecisionFinalAnalista decisionFinalAnalista;
     
-    @Schema(description = "Score interno calculado", example = "750")
-    private BigDecimal scoreInternoCalculado;
+    @Schema(description = "Score interno obtenido de Originación", example = "750")
+    private BigDecimal scoreInterno;
     
     @Schema(description = "Observaciones del motor de reglas")
     private String observacionesMotorReglas;
@@ -39,4 +39,7 @@ public class EvaluacionCrediticiaDTO {
     
     @Schema(description = "Fecha de evaluación")
     private LocalDateTime fechaEvaluacion;
+
+    @Schema(description = "Calificación del cliente según score y resultado", example = "TIPO A")
+    private String calificacionCliente;
 }

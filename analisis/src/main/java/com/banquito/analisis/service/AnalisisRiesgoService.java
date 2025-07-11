@@ -1,8 +1,10 @@
 package com.banquito.analisis.service;
 
 import com.banquito.analisis.client.ClienteBuroCrediticio;
+import com.banquito.analisis.client.OriginacionClient;
 import com.banquito.analisis.client.dto.ConsultasBuroRequest;
 import com.banquito.analisis.client.dto.ConsultasBuroResponse;
+import com.banquito.analisis.client.dto.SolicitudResumenDTO;
 import com.banquito.analisis.controller.dto.EvaluacionCrediticiaDTO;
 import com.banquito.analisis.controller.dto.RevisionAnalistaDTO;
 import com.banquito.analisis.controller.dto.SolicitudAnalisisDTO;
@@ -35,6 +37,7 @@ public class AnalisisRiesgoService {
     private final ObservacionAnalistaRepository observacionAnalistaRepository;
     private final ClienteBuroCrediticio clienteBuroCrediticio;
     private final EvaluacionCrediticiaMapper evaluacionMapper;
+    private final OriginacionClient originacionClient;
     
     private static final BigDecimal FACTOR_CAPACIDAD_PAGO = new BigDecimal("0.30");
     private static final BigDecimal SCORE_APROBACION_AUTOMATICA = new BigDecimal("750");
@@ -45,13 +48,15 @@ public class AnalisisRiesgoService {
                                    EvaluacionCrediticiaRepository evaluacionCrediticiaRepository,
                                    ObservacionAnalistaRepository observacionAnalistaRepository,
                                    ClienteBuroCrediticio clienteBuroCrediticio,
-                                   EvaluacionCrediticiaMapper evaluacionMapper) {
+                                   EvaluacionCrediticiaMapper evaluacionMapper,
+                                   OriginacionClient originacionClient) {
         this.consultasBuroRepository = consultasBuroRepository;
         this.informesBuroRepository = informesBuroRepository;
         this.evaluacionCrediticiaRepository = evaluacionCrediticiaRepository;
         this.observacionAnalistaRepository = observacionAnalistaRepository;
         this.clienteBuroCrediticio = clienteBuroCrediticio;
         this.evaluacionMapper = evaluacionMapper;
+        this.originacionClient = originacionClient;
     }
     
     @Retryable(value = {ServicioBuroException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
@@ -122,7 +127,6 @@ public class AnalisisRiesgoService {
         informe.setScore(consulta.getScoreExterno());
         informe.setMontoTotalAdeudado(consulta.getMontoMorosoTotal());
         informe.setNumeroDeudasImpagas(consulta.getCuentasMorosas());
-        informe.setJsonRespuestaCompleta("{}"); // Simulated JSON response
         
         log.info("Informe del buró procesado exitosamente para consulta: {}", idConsultaBuro);
         
@@ -131,66 +135,60 @@ public class AnalisisRiesgoService {
     
     public EvaluacionCrediticiaDTO evaluarAutomaticamente(SolicitudAnalisisDTO solicitud) {
         log.info("Iniciando evaluación automática para solicitud: {}", solicitud.getIdSolicitud());
-        
-        // Módulo 1: Consulta Buró
+
+        // Obtener la solicitud y el score desde Originación
+        SolicitudResumenDTO resumen = originacionClient.obtenerResumenSolicitud(solicitud.getIdSolicitud());
+        BigDecimal scoreInterno = resumen.getScoreInterno();
+
+        // Módulo 1: Consulta Buró (si aplica)
         ConsultasBuro consulta = consultarBuro(solicitud.getIdSolicitud());
-        
-        // Módulo 2: Informe del Buró
         InformesBuro informe = procesarInformeBuro(consulta.getIdConsulta());
-        
-        // Módulo 3: Evaluación Interna
-        EvaluacionCrediticia evaluacion = calcularEvaluacionInterna(solicitud, informe);
-        
+
+        // Módulo 2: Evaluación Interna (usa el score traído)
+        EvaluacionCrediticia evaluacion = calcularEvaluacionInterna(solicitud, informe, scoreInterno);
+
         log.info("Evaluación automática completada para solicitud: {}", solicitud.getIdSolicitud());
-        
         return evaluacionMapper.toDTO(evaluacion);
     }
-    
-    private EvaluacionCrediticia calcularEvaluacionInterna(SolicitudAnalisisDTO solicitud, InformesBuro informe) {
+
+    private EvaluacionCrediticia calcularEvaluacionInterna(SolicitudAnalisisDTO solicitud, InformesBuro informe, BigDecimal scoreInterno) {
         log.info("Calculando evaluación interna para solicitud: {}", solicitud.getIdSolicitud());
-        
-        // Calcular capacidad de pago
+
+        // Capacidad de pago
         BigDecimal capacidadPago = (solicitud.getIngresos().subtract(solicitud.getEgresos()))
             .multiply(FACTOR_CAPACIDAD_PAGO);
-        
+
         EvaluacionCrediticia evaluacion = new EvaluacionCrediticia();
         evaluacion.setIdSolicitud(solicitud.getIdSolicitud());
         evaluacion.setIdInformeBuro(informe.getIdInformeBuro());
         evaluacion.setFechaEvaluacion(LocalDateTime.now());
-        evaluacion.setScoreInternoCalculado(informe.getScore());
-        
+        evaluacion.setScoreInterno(scoreInterno);
+
         StringBuilder observaciones = new StringBuilder();
-        
-        // Verificar capacidad de pago
+
+        // Reglas de negocio usando el score traído
         if (capacidadPago.compareTo(solicitud.getCuotaMensual()) < 0) {
             evaluacion.setResultadoAutomatico(ResultadoAutomatico.RECHAZADO);
             observaciones.append("Capacidad de pago insuficiente. ");
-            observaciones.append("Capacidad: ").append(capacidadPago);
-            observaciones.append(", Cuota requerida: ").append(solicitud.getCuotaMensual());
+            evaluacion.setCalificacionCliente("TIPO C");
         } else {
-            // Aplicar reglas de score
-            BigDecimal score = informe.getScore();
             Integer deudasMorosas = informe.getNumeroDeudasImpagas();
-            
-            if (score.compareTo(SCORE_APROBACION_AUTOMATICA) > 0 && 
-                (deudasMorosas == null || deudasMorosas == 0)) {
+            if (scoreInterno.compareTo(SCORE_APROBACION_AUTOMATICA) > 0 && (deudasMorosas == null || deudasMorosas == 0)) {
                 evaluacion.setResultadoAutomatico(ResultadoAutomatico.APROBADO);
                 observaciones.append("Score excelente y sin deudas morosas. Aprobación automática.");
-            } else if (score.compareTo(SCORE_REVISION_MANUAL) >= 0 && 
-                       score.compareTo(SCORE_APROBACION_AUTOMATICA) <= 0) {
+                evaluacion.setCalificacionCliente("TIPO A");
+            } else if (scoreInterno.compareTo(SCORE_REVISION_MANUAL) >= 0 && scoreInterno.compareTo(SCORE_APROBACION_AUTOMATICA) <= 0) {
                 evaluacion.setResultadoAutomatico(ResultadoAutomatico.REVISION_MANUAL);
                 observaciones.append("Score intermedio. Requiere revisión manual.");
+                evaluacion.setCalificacionCliente("TIPO B");
             } else {
                 evaluacion.setResultadoAutomatico(ResultadoAutomatico.RECHAZADO);
                 observaciones.append("Score bajo o deudas morosas detectadas. Rechazo automático.");
+                evaluacion.setCalificacionCliente("TIPO C");
             }
         }
-        
+
         evaluacion.setObservacionesMotorReglas(observaciones.toString());
-        
-        log.info("Evaluación interna calculada. Resultado: {} para solicitud: {}", 
-                evaluacion.getResultadoAutomatico(), solicitud.getIdSolicitud());
-        
         return evaluacionCrediticiaRepository.save(evaluacion);
     }
     

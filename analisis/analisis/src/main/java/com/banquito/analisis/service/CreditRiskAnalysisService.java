@@ -152,7 +152,7 @@ public class CreditRiskAnalysisService {
         evaluacion.setIdSolicitud(solicitud.getIdSolicitud());
         evaluacion.setIdInformeBuro(informe.getIdInformeBuro());
         evaluacion.setFechaEvaluacion(LocalDateTime.now());
-        evaluacion.setScoreInternoCalculado(informe.getScore());
+        evaluacion.setScoreInterno(informe.getScore());
         
         StringBuilder observaciones = new StringBuilder();
         
